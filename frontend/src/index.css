@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface text-slate-100 font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #1e293b;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 3px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-card border border-surface-border rounded-xl p-5;
+  }
+
+  .badge-ev {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-semibold;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150 cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand hover:bg-brand-dark text-white;
+  }
+
+  .btn-ghost {
+    @apply btn bg-surface-hover hover:bg-surface-border text-slate-300 border border-surface-border;
+  }
+
+  .ev-bar {
+    @apply h-1.5 rounded-full bg-gradient-to-r from-brand to-brand-light;
+  }
+}
