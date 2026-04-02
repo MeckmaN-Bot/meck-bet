@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     # Kelly fraction (0.25 = Quarter Kelly, conservative)
     KELLY_FRACTION: float = 0.25
 
+    # NBA Simulation
+    DAILY_PICKS: int = 5                    # How many NBA bets to pick per day
+    NBA_BANKROLL: float = 1000.0            # Starting simulated bankroll
+    MIN_MODEL_CONFIDENCE: float = 0.40      # Min model P(win) to include a pick
+
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./meck_bet.db"
 

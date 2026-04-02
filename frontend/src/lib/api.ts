@@ -86,4 +86,38 @@ export const api = {
 
   // Config
   getConfig: () => get<Record<string, unknown>>('/config'),
+
+  // ── NBA Simulator ─────────────────────────────────────────────────────────
+  nbaRunPicks: (nPicks?: number, bankroll?: number, simDate?: string) =>
+    post('/nba/picks/run', undefined),
+
+  nbaSettle: (settleDate?: string) =>
+    post('/nba/settle', undefined),
+
+  nbaGetTodayPicks: () => get<unknown[]>('/nba/picks/today'),
+
+  nbaGetSimulations: (limit = 30) =>
+    get<unknown[]>('/nba/simulations', { limit }),
+
+  nbaGetPerformanceSummary: () => get<{
+    total_picks: number; won: number; lost: number;
+    hit_rate: number | null; total_pl: number; roi_percent: number | null;
+    total_staked: number; avg_odds: number | null; avg_ev: number | null;
+    best_day: { date: string; pl: number } | null;
+    worst_day: { date: string; pl: number } | null;
+    bankroll_curve: { date: string; bankroll: number; pl: number; hit_rate: number | null }[];
+  }>('/nba/performance/summary'),
+
+  nbaGetPerformanceByBookmaker: () => get<unknown[]>('/nba/performance/by-bookmaker'),
+
+  nbaGetModelWeights: () => get<{
+    version: number; n_updates: number;
+    feature_importance: { feature: string; weight: number; abs_weight: number }[];
+    weights: Record<string, number>;
+  }>('/nba/model/weights'),
+
+  nbaGetModelPerformance: () => get<unknown[]>('/nba/model/performance'),
+
+  nbaInjectDemo: (days = 30) =>
+    post(`/nba/demo/inject?days=${days}`, undefined),
 }
