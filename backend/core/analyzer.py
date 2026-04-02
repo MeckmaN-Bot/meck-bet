@@ -113,8 +113,10 @@ async def analyze_event(
         # Mark existing value bets as inactive (stale)
         await session.execute(
             update(ValueBet)
-            .where(ValueBet.event_id == event_id, ValueBet.market == market_key)
+            .where(ValueBet.event_id == event_id)
+            .where(ValueBet.market == market_key)
             .values(is_active=False)
+            .execution_options(synchronize_session=False)
         )
 
         vb_results = find_value_bets(
@@ -164,8 +166,10 @@ async def analyze_event(
         # Deactivate old arb for this event
         await session.execute(
             update(ArbitrageOpportunity)
-            .where(ArbitrageOpportunity.event_id == event_id, ArbitrageOpportunity.market == market_key)
+            .where(ArbitrageOpportunity.event_id == event_id)
+            .where(ArbitrageOpportunity.market == market_key)
             .values(is_active=False)
+            .execution_options(synchronize_session=False)
         )
         db_arb = ArbitrageOpportunity(
             event_id=event_id,

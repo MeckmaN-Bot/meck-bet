@@ -17,9 +17,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
 from core.nba_fetcher import nba_fetcher
+from typing import Optional
 from core.learning_engine import (
     get_model, set_model, BetFeatures, LearningModel,
-    compute_model_metrics, ModelWeights as _mw
+    compute_model_metrics,
 )
 from models.database import (
     DailySimulation, DailyPick, ModelWeights, ModelPerformance
@@ -74,7 +75,7 @@ async def save_model_to_db(session: AsyncSession, model: LearningModel):
     logger.info(f"Saved model v{new_version} ({model.n_updates} updates) to DB")
 
 
-async def settle_pending_picks(session: AsyncSession, settle_date: str | None = None) -> dict:
+async def settle_pending_picks(session: AsyncSession, settle_date: Optional[str] = None) -> dict:
     """
     Fetch results and settle all pending picks for the given date.
     Defaults to yesterday (games from yesterday should be finished by now).
