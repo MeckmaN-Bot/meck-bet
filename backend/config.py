@@ -4,21 +4,34 @@ from typing import List
 
 class Settings(BaseSettings):
     # ── The Odds API ──────────────────────────────────────────────────────────
-    # Get a free key at https://the-odds-api.com (500 requests/month free)
     ODDS_API_KEY: str = "YOUR_ODDS_API_KEY"
     ODDS_API_BASE: str = "https://api.the-odds-api.com/v4"
 
-    # ── Sharp reference books (used as ground truth for true probabilities) ──
-    # Pinnacle is the gold standard — very low margin, efficient market
+    # ── Server ────────────────────────────────────────────────────────────────
+    # Bind address — use 127.0.0.1 if nginx proxies, 0.0.0.0 for direct access
+    HOST: str = "0.0.0.0"
+    # Port — change if 8000 is taken by another service
+    PORT: int = 8000
+    # Public URL shown in logs and health endpoint (e.g. https://bet.example.com)
+    PUBLIC_URL: str = ""
+
+    # ── CORS ─────────────────────────────────────────────────────────────────
+    # Comma-separated list of allowed origins.
+    # Use "*" to allow all (safe behind nginx with restricted upstream).
+    # For direct access without nginx, list your exact URLs:
+    #   CORS_ORIGINS=https://bet.example.com,http://192.168.1.10:8080
+    CORS_ORIGINS: str = "*"
+
+    # ── Sharp reference books ─────────────────────────────────────────────────
     SHARP_BOOKS: List[str] = ["pinnacle", "betfair_ex_eu", "matchbook"]
 
-    # ── Soft books to compare against for value detection ─────────────────────
+    # ── Soft books ────────────────────────────────────────────────────────────
     SOFT_BOOKS: List[str] = [
         "bet365", "unibet", "bwin", "williamhill", "betway",
         "betsson", "nordicbet", "draftkings", "fanduel", "betmgm"
     ]
 
-    # ── Sports to scan (The Odds API sport keys) ───────────────────────────────
+    # ── Sports to scan ────────────────────────────────────────────────────────
     SPORTS: List[str] = [
         "basketball_nba",
         "soccer_germany_bundesliga",
@@ -31,33 +44,33 @@ class Settings(BaseSettings):
         "icehockey_nhl",
     ]
 
-    # ── Markets to scan ────────────────────────────────────────────────────────
+    # ── Markets ───────────────────────────────────────────────────────────────
     MARKETS: List[str] = ["h2h", "spreads", "totals"]
 
-    # ── Polling / Scheduler ───────────────────────────────────────────────────
-    # How often to refresh odds (minutes). Lower = more API usage.
-    POLL_INTERVAL_MINUTES: int = 5
+    # ── Polling ───────────────────────────────────────────────────────────────
+    POLL_INTERVAL_MINUTES: int = 10
 
     # ── EV Thresholds ─────────────────────────────────────────────────────────
-    # Minimum EV% to show a value bet (0.02 = 2% edge required)
     MIN_EV_THRESHOLD: float = 0.02
-    # Minimum guaranteed profit for arbitrage detection
     MIN_ARB_THRESHOLD: float = 0.001
 
     # ── Bankroll & Betting ────────────────────────────────────────────────────
-    # Simulated bankroll in EUR/USD (used for Kelly stake sizing)
     DEFAULT_BANKROLL: float = 1000.0
-    # Kelly fraction: 0.25 = Quarter Kelly (safe), 0.5 = Half Kelly
     KELLY_FRACTION: float = 0.25
 
     # ── NBA Daily Simulation ──────────────────────────────────────────────────
-    # Number of bets to pick per day
     DAILY_PICKS: int = 5
-    # Minimum model P(win) for a pick to be included (filters low-confidence bets)
     MIN_MODEL_CONFIDENCE: float = 0.40
 
     # ── Database ──────────────────────────────────────────────────────────────
+    # Default: sqlite file relative to backend/ directory
     DATABASE_URL: str = "sqlite+aiosqlite:///./meck_bet.db"
+
+    def cors_origins_list(self) -> List[str]:
+        """Parse CORS_ORIGINS string into a list."""
+        if self.CORS_ORIGINS.strip() == "*":
+            return ["*"]
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
     class Config:
         env_file = ".env"

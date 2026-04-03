@@ -145,10 +145,12 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
+_cors_origins = settings.cors_origins_list()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:8000"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_origin_regex=r".*" if "*" in _cors_origins else None,
+    allow_credentials="*" not in _cors_origins,  # credentials only when specific origins
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -169,12 +171,15 @@ async def health():
         }
         for j in scheduler.get_jobs()
     ]
+    public_url = settings.PUBLIC_URL or f"http://localhost:{settings.PORT}"
     return {
         "status": "ok",
         "time": datetime.now(timezone.utc).isoformat(),
         "scheduler_running": scheduler.running,
         "jobs": jobs,
         "frontend_built": FRONTEND_DIST.exists(),
+        "public_url": public_url,
+        "port": settings.PORT,
     }
 
 
@@ -195,21 +200,38 @@ async def get_config():
 
 
 # ── Static Frontend (production) ─────────────────────────────────────────────
-# Must come AFTER all API routes so /api/* takes priority.
+# Mounted AFTER all API routes so /api/* always takes priority.
+# Works for both root ('/') and subpath ('/meck-bet/') deployments — nginx
+# strips the subpath prefix before forwarding to uvicorn, so FastAPI always
+# sees paths starting from '/'.
 if FRONTEND_DIST.exists():
-    # Serve /assets/* as static files
-    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")
+    assets_dir = FRONTEND_DIST / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str):
-        """Catch-all: serve index.html for all non-API routes (SPA routing)."""
-        # Don't catch API routes (belt and suspenders)
+        """
+        SPA catch-all: serve index.html for any non-API path so that
+        React Router handles client-side navigation.
+        """
         if full_path.startswith("api/"):
             from fastapi import HTTPException
-            raise HTTPException(status_code=404)
+            raise HTTPException(status_code=404, detail="Not found")
+
+        # Serve real static files (favicon, manifest, etc.) if they exist
+        candidate = FRONTEND_DIST / full_path
+        if candidate.is_file():
+            return FileResponse(str(candidate))
+
+        # Fall back to index.html for all React routes
         index = FRONTEND_DIST / "index.html"
         if index.exists():
             return FileResponse(str(index))
+
         return {"error": "Frontend not built. Run: cd frontend && npm run build"}
 else:
-    logger.info("Frontend dist not found — running in API-only mode (dev). Run 'npm run build' for production.")
+    logger.info(
+        "Frontend dist not found — API-only mode. "
+        "Run 'cd frontend && npm run build' to enable the UI."
+    )
