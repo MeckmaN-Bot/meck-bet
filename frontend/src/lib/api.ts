@@ -94,10 +94,23 @@ export const api = {
   nbaSettle: (settleDate?: string) =>
     post('/nba/settle', undefined),
 
-  nbaGetTodayPicks: () => get<unknown[]>('/nba/picks/today'),
+  nbaGetTodayPicks: () => get<{
+    id: number; sim_date: string; match: string; home_team: string; away_team: string;
+    commence_time: string | null; market: string; outcome: string; bookmaker: string;
+    odds: number; true_prob: number; ev_percent: number; score: number;
+    kelly_fraction: number; stake: number; model_win_prob: number;
+    result: 'pending' | 'won' | 'lost' | 'void';
+    actual_home_score: number | null; actual_away_score: number | null;
+    profit_loss: number | null; picked_at: string | null;
+  }[]>('/nba/picks/today'),
 
   nbaGetSimulations: (limit = 30) =>
-    get<unknown[]>('/nba/simulations', { limit }),
+    get<{
+      id: number; sim_date: string; bankroll_start: number; bankroll_end: number | null;
+      n_picks: number; n_won: number; n_lost: number; n_pending: number;
+      hit_rate: number | null; roi_percent: number | null; total_staked: number;
+      total_pl: number | null; model_version: number; settled_at: string | null;
+    }[]>('/nba/simulations', { limit }),
 
   nbaGetPerformanceSummary: () => get<{
     total_picks: number; won: number; lost: number;
@@ -108,7 +121,10 @@ export const api = {
     bankroll_curve: { date: string; bankroll: number; pl: number; hit_rate: number | null }[];
   }>('/nba/performance/summary'),
 
-  nbaGetPerformanceByBookmaker: () => get<unknown[]>('/nba/performance/by-bookmaker'),
+  nbaGetPerformanceByBookmaker: () => get<{
+    bookmaker: string; n_bets: number; won: number;
+    hit_rate: number; total_pl: number; roi_percent: number;
+  }[]>('/nba/performance/by-bookmaker'),
 
   nbaGetModelWeights: () => get<{
     version: number; n_updates: number;
@@ -116,7 +132,11 @@ export const api = {
     weights: Record<string, number>;
   }>('/nba/model/weights'),
 
-  nbaGetModelPerformance: () => get<unknown[]>('/nba/model/performance'),
+  nbaGetModelPerformance: () => get<{
+    version: number; n_picks: number; won: number; hit_rate: number | null;
+    roi_percent: number | null; brier_score: number | null; log_loss: number | null;
+    recorded_at: string;
+  }[]>('/nba/model/performance'),
 
   nbaInjectDemo: (days = 30) =>
     post(`/nba/demo/inject?days=${days}`, undefined),
