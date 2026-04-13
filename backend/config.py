@@ -3,8 +3,10 @@ from typing import List
 
 
 class Settings(BaseSettings):
-    # ── The Odds API ──────────────────────────────────────────────────────────
-    ODDS_API_KEY: str = "YOUR_ODDS_API_KEY"
+    # ── The Odds API (optional) ───────────────────────────────────────────────
+    # Leave empty to use Action Network (free, no key needed).
+    # Set to use The Odds API for broader coverage / EU bookmakers.
+    ODDS_API_KEY: str = ""
     ODDS_API_BASE: str = "https://api.the-odds-api.com/v4"
 
     # ── Server ────────────────────────────────────────────────────────────────
@@ -32,17 +34,9 @@ class Settings(BaseSettings):
     ]
 
     # ── Sports to scan ────────────────────────────────────────────────────────
-    SPORTS: List[str] = [
-        "basketball_nba",
-        "soccer_germany_bundesliga",
-        "soccer_england_premier_league",
-        "soccer_spain_la_liga",
-        "soccer_italy_serie_a",
-        "soccer_france_ligue_one",
-        "soccer_uefa_champs_league",
-        "americanfootball_nfl",
-        "icehockey_nhl",
-    ]
+    # NBA-only by default (Action Network source). Add others only if you have
+    # an Odds API key with sufficient quota.
+    SPORTS: List[str] = ["basketball_nba"]
 
     # ── Markets ───────────────────────────────────────────────────────────────
     MARKETS: List[str] = ["h2h", "spreads", "totals"]
