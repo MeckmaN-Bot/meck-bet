@@ -83,6 +83,7 @@ export interface DashboardSummary {
   api_quota: {
     requests_used: number
     requests_remaining: number
+    source?: string
   }
 }
 
@@ -107,5 +108,6 @@ export interface ScanStatus {
   api_quota: {
     requests_used: number
     requests_remaining: number
+    source?: string
   }
 }
