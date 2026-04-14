@@ -121,8 +121,8 @@ async def run_daily_picks(
         logger.warning(f"Could not fetch live team stats, using demo defaults: {e}")
         team_stats = nba_fetcher.demo_team_stats()
 
-    # ── 2. Fetch NBA odds ────────────────────────────────────────────────────
-    events = await odds_client.get_odds(sport_key=NBA_SPORT_KEY, markets="h2h")
+    # ── 2. Fetch NBA odds (live_only=True: never use demo data for real picks) ─
+    events = await odds_client.get_odds(sport_key=NBA_SPORT_KEY, markets="h2h", live_only=True)
 
     if not events:
         logger.warning("No NBA events returned. Cannot generate picks.")

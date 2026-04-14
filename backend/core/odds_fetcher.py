@@ -261,20 +261,20 @@ class UnifiedOddsClient:
         self,
         sport_key: str = "basketball_nba",
         markets:   str = "h2h",
+        live_only: bool = False,
     ) -> list[dict]:
         """
         Returns events in The Odds API normalized format regardless of source.
+        Set live_only=True to return [] instead of demo data when no real games found
+        (use this for daily picks so fake data never enters the simulation).
         """
         # ── 1. Action Network (always try first for NBA) ──────────────────────
         if sport_key == "basketball_nba":
             try:
                 events = await self._an.get_nba_odds(days_ahead=3)
                 if events:
-                    # Filter to requested market if not h2h
                     if markets != "h2h":
-                        events = [
-                            _filter_market(e, markets) for e in events
-                        ]
+                        events = [_filter_market(e, markets) for e in events]
                         events = [e for e in events if e]
                     return events
                 logger.warning("Action Network returned no NBA games — trying fallback")
@@ -288,7 +288,11 @@ class UnifiedOddsClient:
             if events:
                 return events
 
-        # ── 3. Demo data ──────────────────────────────────────────────────────
+        # ── 3. No real data available ─────────────────────────────────────────
+        if live_only:
+            logger.warning("No live NBA data available — returning empty (live_only=True)")
+            return []
+
         logger.warning("All live sources failed — using demo data")
         return _demo_nba_data()
 
