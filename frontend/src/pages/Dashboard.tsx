@@ -41,20 +41,6 @@ export default function Dashboard() {
         <ScanButton onComplete={refetch} />
       </div>
 
-      {/* API Key Warning */}
-      {summary!.api_quota.requests_remaining === 500 && (
-        <div className="card border-yellow-800 bg-yellow-900/10 flex gap-3 items-start">
-          <AlertCircle size={18} className="text-yellow-400 shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <span className="text-yellow-300 font-semibold">Demo-Modus aktiv</span>
-            <span className="text-slate-400 ml-2">
-              Kein API-Key gesetzt. Hol dir einen kostenlosen Key auf{' '}
-              <code className="text-xs bg-slate-800 px-1 rounded">the-odds-api.com</code>
-              {' '}und trage ihn in <code className="text-xs bg-slate-800 px-1 rounded">backend/.env</code> ein.
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -141,23 +127,34 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* API Quota */}
+      {/* Odds Source Info */}
       <div className="card">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-500 uppercase tracking-wider">API-Kontingent (The Odds API)</span>
+          {summary!.api_quota.source === 'action_network' ? (
+            <span className="text-xs text-slate-500 uppercase tracking-wider">Odds-Quelle: Action Network</span>
+          ) : (
+            <span className="text-xs text-slate-500 uppercase tracking-wider">API-Kontingent (The Odds API)</span>
+          )}
           <span className="text-xs font-mono text-slate-400">
-            {summary!.api_quota.requests_used} / {summary!.api_quota.requests_used + summary!.api_quota.requests_remaining} Requests
+            {summary!.api_quota.source === 'action_network'
+              ? <span className="text-brand">Kostenlos · Unbegrenzt</span>
+              : `${summary!.api_quota.requests_used} / ${(summary!.api_quota.requests_used ?? 0) + (summary!.api_quota.requests_remaining ?? 500)} Requests`
+            }
           </span>
         </div>
-        <div className="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-brand to-blue-400 rounded-full transition-all"
-            style={{
-              width: `${(summary!.api_quota.requests_used / (summary!.api_quota.requests_used + summary!.api_quota.requests_remaining || 500)) * 100}%`
-            }}
-          />
-        </div>
-        <div className="mt-1 text-xs text-slate-600">{summary!.api_quota.requests_remaining} verbleibend</div>
+        {summary!.api_quota.source !== 'action_network' && (
+          <>
+            <div className="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-brand to-blue-400 rounded-full transition-all"
+                style={{
+                  width: `${((summary!.api_quota.requests_used ?? 0) / ((summary!.api_quota.requests_used ?? 0) + (summary!.api_quota.requests_remaining ?? 500))) * 100}%`
+                }}
+              />
+            </div>
+            <div className="mt-1 text-xs text-slate-600">{summary!.api_quota.requests_remaining} verbleibend</div>
+          </>
+        )}
       </div>
     </div>
   )
